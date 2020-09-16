@@ -16,7 +16,7 @@ void ASDTAIController::UpdateSpeed(APawn* const pawn, float deltaTime)
     speed = speed > speedLimit ? speedLimit : speed;
 
     // update pawn
-    FVector dir = pawn->GetActorForwardVector().GetSafeNormal();
+    FVector dir = pawn->GetActorForwardVector();
     pawn->AddMovementInput(dir, speed);
 }
 
