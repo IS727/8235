@@ -19,7 +19,7 @@ public:
 
     float acceleration = 0.3;
     float speed = 0;
-    float speedLimit = 0.6;
+    const float speedLimit = 0.6;
 
 private:
     virtual void UpdateSpeed(APawn* const pawn, float deltaTime);
