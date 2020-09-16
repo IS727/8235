@@ -16,7 +16,11 @@ class SOFTDESIGNTRAINING_API ASDTAIController : public AAIController
     GENERATED_BODY()
 public:
     virtual void Tick(float deltaTime) override;
-    float acceleration = 4;
-    float speed = 20;
-    FVector speedVector = FVector(0, 0, 0);
+
+    float acceleration = 0.3;
+    float speed = 0;
+    float speedLimit = 0.6;
+
+private:
+    virtual void UpdateSpeed(APawn* const pawn, float deltaTime);
 };

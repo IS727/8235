@@ -6,15 +6,17 @@
 void ASDTAIController::Tick(float deltaTime)
 {
     APawn* const pawn = GetPawn();
-
-    if (pawn)
-    {
-        speedVector = pawn->GetActorForwardVector().GetSafeNormal();
-        pawn->AddMovementInput(speedVector);
-    }
-
+    if (pawn) UpdateSpeed(pawn, deltaTime);
 }
 
+void ASDTAIController::UpdateSpeed(APawn* const pawn, float deltaTime)
+{
+    // compute speed
+    speed += acceleration * deltaTime;
+    speed = speed > speedLimit ? speedLimit : speed;
 
-
+    // update pawn
+    FVector dir = pawn->GetActorForwardVector().GetSafeNormal();
+    pawn->AddMovementInput(dir, speed);
+}
 
