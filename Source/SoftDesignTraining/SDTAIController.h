@@ -23,4 +23,5 @@ public:
 
 private:
     virtual void UpdateSpeed(APawn* const pawn, float deltaTime);
+    virtual bool DetectWordInFrontOfPawn(APawn* const pawn) const;
 };
