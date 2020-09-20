@@ -125,6 +125,6 @@ TArray<FOverlapResult> AIVision::CollectObjectsAround() const
 {
     TArray<FOverlapResult> outResults;
     PhysicsHelpers physicHelper(m_world);
-    physicHelper.SphereOverlap(m_pawn->GetActorLocation() + m_pawn->GetActorForwardVector() * 300.0f, 300.0f, outResults, true);
+    physicHelper.SphereOverlap(m_pawn->GetActorLocation() + m_pawn->GetActorForwardVector() * 300.0f, 300.0f, outResults, false);
     return outResults;
 }
