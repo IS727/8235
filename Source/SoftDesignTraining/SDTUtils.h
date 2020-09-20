@@ -11,4 +11,5 @@ class SOFTDESIGNTRAINING_API SDTUtils
 public:
     static bool Raycast(UWorld* uWorld, FVector sourcePoint, FVector targetPoint);
     static bool IsPlayerPoweredUp(UWorld* uWorld);
+    static FCollisionObjectQueryParams GetAllObjectsQueryParams();
 };

@@ -26,3 +26,12 @@ bool SDTUtils::IsPlayerPoweredUp(UWorld * uWorld)
 
     return castedPlayerCharacter->IsPoweredUp();
 }
+
+FCollisionObjectQueryParams SDTUtils::GetAllObjectsQueryParams()
+{
+    FCollisionObjectQueryParams objectQueryParams;
+    objectQueryParams.AddObjectTypesToQuery(COLLISION_DEATH_OBJECT);
+    objectQueryParams.AddObjectTypesToQuery(COLLISION_COLLECTIBLE);
+    objectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+    return objectQueryParams;
+}
