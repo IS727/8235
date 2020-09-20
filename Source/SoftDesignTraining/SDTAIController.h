@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "AIController.h"
+#include "AIBehavior.h"
 
 #include "SDTAIController.generated.h"
 
@@ -17,20 +19,15 @@ class SOFTDESIGNTRAINING_API ASDTAIController : public AAIController
 public:
     virtual void Tick(float deltaTime) override;
 
+private:
     // ACCELERATION AND SPEED
     float acceleration = 0.3;
     float speed = 0;
     const float speedLimit = 0.6;
 
-    // TURN
-    bool turning = false;
-    float turnDeltaTime = 0.0f;
-    float turnDegree = 0.0f;
-    FVector newHeading;
+    // TURN and obstacle avoidance
+    AIBehavior behavior;
+    AIVision vision;
 
-private:
     virtual void UpdateSpeed(APawn* const pawn, float deltaTime);
-    virtual void HandleObstacles(APawn* const pawn, float deltaTime);
-    virtual void AvoidWall(APawn* const pawn, float deltaTime, bool init, bool right);
-    virtual bool DetectWallInFrontOfPawn(APawn* const pawn);
 };
