@@ -19,10 +19,11 @@ void AIBehavior::HandleObstacles(UWorld* world, APawn* const pawn, float deltaTi
     else
     {
         // detect stuff
-        FVector wallNormal, trapNormal, collectibleNormal;
+        FVector wallNormal, trapNormal, collectibleNormal, playerNormal;
         const bool wallDetected = vision->DetectWall(world, pawn, wallNormal, AIVision::straight);
         const bool trapDetected = vision->DetectTrap(world, pawn, trapNormal);
         const bool collectibleDetected = vision->DetectCollectible(world, pawn, collectibleNormal);
+        const bool playerDetected = vision->DetectPlayer(world, pawn, collectibleNormal);
 
         // decide what to do
         if (wallDetected)
@@ -53,6 +54,11 @@ void AIBehavior::HandleObstacles(UWorld* world, APawn* const pawn, float deltaTi
         else if (collectibleDetected)
         {
             // ...
+        }
+        else if (playerDetected)
+        {
+            // ...
+            UE_LOG(LogTemp, Warning, TEXT("=========> Player found."));
         }
     }
 }

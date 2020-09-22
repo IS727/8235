@@ -32,6 +32,7 @@ FCollisionObjectQueryParams SDTUtils::GetAllObjectsQueryParams()
     FCollisionObjectQueryParams objectQueryParams;
     objectQueryParams.AddObjectTypesToQuery(COLLISION_DEATH_OBJECT);
     objectQueryParams.AddObjectTypesToQuery(COLLISION_COLLECTIBLE);
+    objectQueryParams.AddObjectTypesToQuery(COLLISION_PLAYER);
     objectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
     return objectQueryParams;
 }

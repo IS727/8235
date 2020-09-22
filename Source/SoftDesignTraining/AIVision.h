@@ -18,6 +18,7 @@ public:
     bool DetectWall(UWorld* world, APawn* const pawn, FVector& outObjectNormal, Dir direction = Dir::straight);
     bool DetectTrap(UWorld* world, APawn* const pawn, FVector& outObjectNormal);
     bool DetectCollectible(UWorld* world, APawn* const pawn, FVector& outObjectNormal);
+    bool DetectPlayer(UWorld* world, APawn* const pawn, FVector& outObjectNormal);
 
 private:
 

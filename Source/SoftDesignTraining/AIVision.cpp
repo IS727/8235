@@ -33,6 +33,12 @@ bool AIVision::DetectCollectible(UWorld* world, APawn* const pawn, FVector& outO
     return DetectObjectInDirection(outObjectNormal);
 }
 
+bool AIVision::DetectPlayer(UWorld* world, APawn* const pawn, FVector& outObjectNormal)
+{
+    SetVisionParams(world, pawn, COLLISION_PLAYER);
+    return DetectObjectInDirection(outObjectNormal);
+}
+
 // PRIVATE
 
 void AIVision::SetVisionParams(UWorld* world, APawn* const pawn, ECollisionChannel channel, Dir direction)
@@ -101,7 +107,7 @@ TArray<FOverlapResult> AIVision::CollectVisibleObjects() const
 
         UPrimitiveComponent* objComponent = object.GetComponent();
 
-        const float coneVisionDist = m_channel == COLLISION_COLLECTIBLE ? 600.0f : 350.0f;
+        const float coneVisionDist = (m_channel == COLLISION_COLLECTIBLE || m_channel == COLLISION_PLAYER) ? 600.0f : 350.0f;
         return IsInsideCone(object.GetActor(), coneVisionDist) && objComponent->GetCollisionObjectType() == m_channel && hitData.Num() == 0;
     });
     return objects;
