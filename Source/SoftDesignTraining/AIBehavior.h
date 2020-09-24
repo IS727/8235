@@ -28,6 +28,7 @@ private:
     float m_turnDegree = 0.0f;
     FVector m_targetHeading;
 
+    void MoveToCollectible(APawn* const pawn, float& speed, FVector collectiblePos);
     void AvoidObstacle(APawn* const pawn, float deltaTime, float& speed);
     void ResetTurnState(FVector targetHeading, bool avoidingWall, bool avoidingTrap);
     void InitiateAvoidance(bool turnRight, float turnTime, float turnAngle);

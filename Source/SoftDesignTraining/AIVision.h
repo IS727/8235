@@ -29,7 +29,7 @@ private:
 
     void SetVisionParams(UWorld* world, APawn* const pawn, ECollisionChannel channel, Dir direction = Dir::straight);
 
-    bool DetectObjectInDirection(FVector& ObjectNormal);
+    bool DetectObjectInDirection(FVector& ObjectNormal, bool returnPos = false);
     bool DetectWallInDirection(FVector& outObjectNormal);
     FVector GetObjectNormal(FVector target);
     bool IsInsideCone(AActor* targetActor, float visionDist = 150.0f) const;

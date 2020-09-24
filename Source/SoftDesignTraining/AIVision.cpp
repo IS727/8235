@@ -4,6 +4,7 @@
 #include "AIVision.h"
 #include "SDTUtils.h"
 #include "PhysicsHelpers.h"
+#include "SDTCollectible.h"
 
 AIVision::AIVision()
 {
@@ -30,7 +31,7 @@ bool AIVision::DetectTrap(UWorld* world, APawn* const pawn, FVector& outObjectNo
 bool AIVision::DetectCollectible(UWorld* world, APawn* const pawn, FVector& outObjectNormal)
 {
     SetVisionParams(world, pawn, COLLISION_COLLECTIBLE);
-    return DetectObjectInDirection(outObjectNormal);
+    return DetectObjectInDirection(outObjectNormal, true);
 }
 
 bool AIVision::DetectPlayer(UWorld* world, APawn* const pawn, FVector& outObjectNormal)
@@ -73,12 +74,16 @@ bool AIVision::DetectWallInDirection(FVector& outObjectNormal)
     return foundWall;
 }
 
-bool AIVision::DetectObjectInDirection(FVector& outObjectNormal)
+bool AIVision::DetectObjectInDirection(FVector& outObjectNormal, bool returnPos)
 {
     const TArray<FOverlapResult> foundObjects = CollectVisibleObjects();
     const bool foundObject = foundObjects.Num() > 0;
 
-    if (foundObject) outObjectNormal = GetObjectNormal(foundObjects[0].GetActor()->GetActorLocation());
+    if (foundObject)
+    {
+        const FVector pos = foundObjects[0].GetActor()->GetActorLocation();
+        outObjectNormal = returnPos ? pos : GetObjectNormal(pos);
+    }
     return foundObject;
 }
 
@@ -108,7 +113,14 @@ TArray<FOverlapResult> AIVision::CollectVisibleObjects() const
         UPrimitiveComponent* objComponent = object.GetComponent();
 
         const float coneVisionDist = (m_channel == COLLISION_COLLECTIBLE || m_channel == COLLISION_PLAYER) ? 600.0f : 350.0f;
-        return IsInsideCone(object.GetActor(), coneVisionDist) && objComponent->GetCollisionObjectType() == m_channel && hitData.Num() == 0;
+        bool objIsVisible = true;
+        if (objComponent->GetCollisionObjectType() == COLLISION_COLLECTIBLE)
+        {
+            AStaticMeshActor* collectible = dynamic_cast <AStaticMeshActor*>(object.GetActor());
+            objIsVisible = collectible->GetStaticMeshComponent()->IsVisible();
+        }
+
+        return IsInsideCone(object.GetActor(), coneVisionDist) && objComponent->GetCollisionObjectType() == m_channel && hitData.Num() == 0 && objIsVisible;
     });
     return objects;
 }
