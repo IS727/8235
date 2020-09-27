@@ -59,6 +59,9 @@ void AIBehavior::HandleObstacles(UWorld* world, APawn* const pawn, float deltaTi
 
 // PRIVATE
 
+/**
+ * Rotates the pawn towards the target position
+ */
 void AIBehavior::MoveToTarget(APawn* const pawn, float& speed, FVector targetPos)
 {
     FVector const toTarget((targetPos - pawn->GetActorLocation()).GetSafeNormal());
@@ -66,6 +69,12 @@ void AIBehavior::MoveToTarget(APawn* const pawn, float& speed, FVector targetPos
     pawn->AddActorWorldRotation(FRotator(0.0f, degree, 0.0f));
 }
 
+/**
+ * Performs a continuous turn of "m_turnAngle" degrees, in "m_turnTime" seconds
+ * The turn is performed as long as either one of "m_avoidingWall" or "m_avoidingTrap" is true
+ * 
+ * @param speed the current speed of the pawn
+ */
 void AIBehavior::AvoidObstacle(APawn* const pawn, float deltaTime, float& speed)
 {
     const float direction = m_turnRight ? 1.0 : -1.0;
@@ -95,6 +104,9 @@ void AIBehavior::AvoidObstacle(APawn* const pawn, float deltaTime, float& speed)
     }
 }
 
+/**
+ * Adjusts the pawn position and direction to remain away from any wall detected at the right or the left side of the pawn
+ */
 void AIBehavior::KeepWallsAway(UWorld* world, APawn* const pawn, AIVision* vision)
 {
     FVector rightWallNormal, leftWallNormal;
@@ -141,6 +153,13 @@ void AIBehavior::ResetTurnState(FVector targetHeading, bool avoidingWall, bool a
     m_turnAngle = 0.0f;
 }
 
+/*
+ * Starts a turn
+ * 
+ * @param turnRight if true, the pawn will turn to the right
+ * @param turnTime the amount of time (in seconds) the turn should be performed
+ * @param turnAngle the turn angle
+ */
 void AIBehavior::InitiateAvoidance(bool turnRight, float turnTime, float turnAngle)
 {
     m_turnRight = turnRight;
@@ -148,18 +167,33 @@ void AIBehavior::InitiateAvoidance(bool turnRight, float turnTime, float turnAng
     m_turnAngle = turnAngle;
 }
 
+/*
+ * @return the degrees between the pawn direction and the provided vector
+ */
 float AIBehavior::GetPawnDegreesToVector(APawn* const pawn, const FVector vector) const
 {
     float degrees = FMath::RadiansToDegrees(std::acos(FVector::DotProduct(pawn->GetActorForwardVector(), vector)));
     return FVector::DotProduct(pawn->GetActorRightVector(), vector) < 0 ? -degrees : degrees;
 }
 
+/*
+ * Makes the pawn perform a 180
+ * 
+ * @param avoidingWall if true, sets the pawn in the wall avoidance state
+ * @param avoidingTrap if true, sets the pawn in the trap avoidance state
+ */
 void AIBehavior::TurnBack(APawn* const pawn, bool avoidingWall, bool avoidingTrap)
 {
     ResetTurnState(FRotator(0.0f, -180.0f, 0.0f).RotateVector(pawn->GetActorForwardVector()), avoidingWall, avoidingTrap);
     InitiateAvoidance(true, 0.2f, 180.0f);
 }
 
+/*
+ * Makes the pawn perform a 180
+ *
+ * @param avoidingWall if true, sets the pawn in the wall avoidance state
+ * @param avoidingTrap if true, sets the pawn in the trap avoidance state
+ */
 void AIBehavior::Dodge(APawn* const pawn, bool dodgeTowardsLeft)
 {
     FVector escape = pawn->GetActorRightVector().GetSafeNormal();
@@ -167,6 +201,11 @@ void AIBehavior::Dodge(APawn* const pawn, bool dodgeTowardsLeft)
     pawn->AddMovementInput(escape, 0.15);UE_LOG(LogTemp, Warning, TEXT("Dodeging ") );
 }
 
+/*
+ * Returns the next direction the pawn should turn when blocked by a wall if both left and right are free
+ *
+ * @return true if the pawn should turn to the right. false otherwise
+ */
 bool AIBehavior::GetRandomTurnDirection()
 {
     const bool nextDirection = m_nextRandomTurnRight;

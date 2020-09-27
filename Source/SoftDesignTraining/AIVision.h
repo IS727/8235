@@ -17,8 +17,8 @@ public:
 
     TTuple<bool, float> DetectWall(UWorld* world, APawn* const pawn, FVector& outObjectNormal, Dir direction = Dir::straight);
     bool DetectTrap(UWorld* world, APawn* const pawn, FVector& outObjectNormal);
-    bool DetectCollectible(UWorld* world, APawn* const pawn, FVector& outObjectNormal);
-    TTuple<bool, bool> DetectPlayer(UWorld* world, APawn* const pawn, FVector& outObjectNormal);
+    bool DetectCollectible(UWorld* world, APawn* const pawn, FVector& outCollectiblePos);
+    TTuple<bool, bool> DetectPlayer(UWorld* world, APawn* const pawn, FVector& outPlayerPos);
 
     const float m_visionAngle = 25.0f;
     float m_coneVisionDist = 350.0f;
