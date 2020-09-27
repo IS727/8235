@@ -17,6 +17,9 @@ public:
     void HandleObstacles(UWorld* world, APawn* const pawn, float deltaTime, float& speed, AIVision* vision);
 
 private:
+    const float m_minWallSeparation = 150.0f;
+    bool m_nextRandomTurnRight = true;
+
     bool m_avoidingWall = false;
     bool m_avoidingTrap = false;
 
@@ -28,8 +31,13 @@ private:
     float m_turnDegree = 0.0f;
     FVector m_targetHeading;
 
-    void MoveToCollectible(APawn* const pawn, float& speed, FVector collectiblePos);
+    void MoveToTarget(APawn* const pawn, float& speed, FVector collectiblePos);
     void AvoidObstacle(APawn* const pawn, float deltaTime, float& speed);
+    void KeepWallsAway(UWorld* world, APawn* const pawn, AIVision* vision);
     void ResetTurnState(FVector targetHeading, bool avoidingWall, bool avoidingTrap);
-    void InitiateAvoidance(bool turnRight, float turnTime, float turnAngle);
+    void InitiateAvoidance(bool turnRight, float turnTime = 0.5f, float turnAngle = 90.0f);
+    float GetPawnDegreesToVector(APawn* const pawn, const FVector vector) const;
+    void TurnBack(APawn* const pawn, bool avoidingWall, bool avoidingTrap);
+    void Dodge(APawn* const pawn, bool dodgeTowardsLeft);
+    bool GetRandomTurnDirection();
 };

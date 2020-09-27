@@ -5,6 +5,7 @@
 #include "SDTUtils.h"
 #include "PhysicsHelpers.h"
 #include "SDTCollectible.h"
+#include <SoftDesignTraining\SoftDesignTrainingMainCharacter.h>
 
 AIVision::AIVision()
 {
@@ -16,41 +17,50 @@ AIVision::~AIVision()
 
 // PUBLIC
 
-bool AIVision::DetectWall(UWorld* world, APawn* const pawn, FVector& outObjectNormal, Dir direction)
+TTuple<bool, float> AIVision::DetectWall(UWorld* world, APawn* const pawn, FVector& outObjectNormal, Dir direction)
 {
-    SetVisionParams(world, pawn, ECC_WorldStatic, direction);
+    SetVisionParams(world, pawn, ECC_WorldStatic, 350.0f, direction);
     return DetectWallInDirection(outObjectNormal);
 }
 
 bool AIVision::DetectTrap(UWorld* world, APawn* const pawn, FVector& outObjectNormal)
 {
     SetVisionParams(world, pawn, COLLISION_DEATH_OBJECT);
-    return DetectObjectInDirection(outObjectNormal);
+    return DetectObjectInDirection(outObjectNormal).Get<0>();
 }
 
 bool AIVision::DetectCollectible(UWorld* world, APawn* const pawn, FVector& outObjectNormal)
 {
-    SetVisionParams(world, pawn, COLLISION_COLLECTIBLE);
-    return DetectObjectInDirection(outObjectNormal, true);
+    SetVisionParams(world, pawn, COLLISION_COLLECTIBLE, 600.0f);
+    return DetectObjectInDirection(outObjectNormal, true).Get<0>();
 }
 
-bool AIVision::DetectPlayer(UWorld* world, APawn* const pawn, FVector& outObjectNormal)
+TTuple<bool, bool> AIVision::DetectPlayer(UWorld* world, APawn* const pawn, FVector& outObjectNormal)
 {
-    SetVisionParams(world, pawn, COLLISION_PLAYER);
-    return DetectObjectInDirection(outObjectNormal);
+    SetVisionParams(world, pawn, COLLISION_PLAYER, 600.0f);
+    TTuple<bool, AActor*> res = DetectObjectInDirection(outObjectNormal, true);
+    const bool playerFound = res.Get<0>();
+    bool playerIsPoweredUp = false;
+    if (playerFound)
+    {
+        ASoftDesignTrainingMainCharacter* player = dynamic_cast <ASoftDesignTrainingMainCharacter*>(res.Get<1>());
+        playerIsPoweredUp = player->IsPoweredUp();
+    }
+    return TTuple<bool, bool>(playerFound, playerIsPoweredUp);
 }
 
 // PRIVATE
 
-void AIVision::SetVisionParams(UWorld* world, APawn* const pawn, ECollisionChannel channel, Dir direction)
+void AIVision::SetVisionParams(UWorld* world, APawn* const pawn, ECollisionChannel channel, float coneVisionDist, Dir direction)
 {
     m_world = world;
     m_pawn = pawn;
     m_direction = direction;
     m_channel = channel;
+    m_coneVisionDist = coneVisionDist;
 }
 
-bool AIVision::DetectWallInDirection(FVector& outObjectNormal)
+TTuple<bool, float> AIVision::DetectWallInDirection(FVector& outObjectNormal)
 {
     float visionDist = 250.0f;
     FHitResult hitResult;
@@ -60,6 +70,8 @@ bool AIVision::DetectWallInDirection(FVector& outObjectNormal)
 
     if (m_direction == Dir::left) { rotation = -80.0f; visionDist = 300.0f; }
     else if (m_direction == Dir::right) { rotation = 80.0f; visionDist = 300.0f; }
+    else if (m_direction == Dir::angleRight) rotation = 20.0f;
+    else if (m_direction == Dir::angleLeft) rotation = -20.0f;
     dir = FRotator(0.0f, rotation, 0.0f).RotateVector(dir) * visionDist;
 
     FVector end(start + dir);
@@ -71,20 +83,22 @@ bool AIVision::DetectWallInDirection(FVector& outObjectNormal)
         m_channel
     );
     if (foundWall) outObjectNormal = FRotator(0.0f, -90.0f, 0.0f).RotateVector(hitResult.ImpactNormal.GetSafeNormal());
-    return foundWall;
+    return TTuple<bool, float>(foundWall, hitResult.Distance);
 }
 
-bool AIVision::DetectObjectInDirection(FVector& outObjectNormal, bool returnPos)
+TTuple<bool, AActor*> AIVision::DetectObjectInDirection(FVector& outObjectNormal, bool returnPos)
 {
     const TArray<FOverlapResult> foundObjects = CollectVisibleObjects();
     const bool foundObject = foundObjects.Num() > 0;
+    AActor* objActor;
 
     if (foundObject)
     {
-        const FVector pos = foundObjects[0].GetActor()->GetActorLocation();
+        objActor = foundObjects[0].GetActor();
+        const FVector pos = objActor->GetActorLocation();
         outObjectNormal = returnPos ? pos : GetObjectNormal(pos);
     }
-    return foundObject;
+    return TTuple<bool, AActor*>(foundObject, objActor);
 }
 
 FVector AIVision::GetObjectNormal(FVector target)
@@ -104,7 +118,7 @@ TArray<FOverlapResult> AIVision::CollectVisibleObjects() const
         const FVector end(object.GetActor()->GetActorLocation());
         TArray <FHitResult> hitData;
 
-        // add obstacles
+        // add all obstacles
         FCollisionObjectQueryParams objectQueryParams = SDTUtils::GetAllObjectsQueryParams();
         objectQueryParams.RemoveObjectTypesToQuery(m_channel); // remove the target
 
@@ -112,30 +126,33 @@ TArray<FOverlapResult> AIVision::CollectVisibleObjects() const
 
         UPrimitiveComponent* objComponent = object.GetComponent();
 
-        const float coneVisionDist = (m_channel == COLLISION_COLLECTIBLE || m_channel == COLLISION_PLAYER) ? 600.0f : 350.0f;
-        bool objIsVisible = true;
+        // check if object is not hidden
+        bool objIsHidden = false;
         if (objComponent->GetCollisionObjectType() == COLLISION_COLLECTIBLE)
         {
             AStaticMeshActor* collectible = dynamic_cast <AStaticMeshActor*>(object.GetActor());
-            objIsVisible = collectible->GetStaticMeshComponent()->IsVisible();
+            objIsHidden = !collectible->GetStaticMeshComponent()->IsVisible();
         }
-
-        return IsInsideCone(object.GetActor(), coneVisionDist) && objComponent->GetCollisionObjectType() == m_channel && hitData.Num() == 0 && objIsVisible;
+        return ObjectIsVisible(object, hitData, objIsHidden);
     });
     return objects;
 }
 
-bool AIVision::IsInsideCone(AActor* targetActor, float visionDist) const
+bool AIVision::ObjectIsVisible(const FOverlapResult object, const TArray <FHitResult> hitData, bool objIsHidden) const
 {
-    const float visionAngle = 30.0f;
+    const bool objIsInsideCone = IsInsideCone(object.GetActor());
+    const bool objIsRelevant = object.GetComponent()->GetCollisionObjectType() == m_channel;
+    const bool objIsClearToReach = hitData.Num() == 0;
+    return objIsInsideCone && objIsRelevant && objIsClearToReach && !objIsHidden;
+}
 
-    // compute the cone direction vector
-    FVector dir = m_pawn->GetActorForwardVector().GetSafeNormal();
-
-    FVector const toTarget = targetActor->GetActorLocation() - m_pawn->GetActorLocation();
-    const float acos = std::abs(std::acos(FVector::DotProduct(dir, toTarget.GetSafeNormal()))) * 180 / PI;
-    const bool angleOk = acos < visionAngle;
-    const bool distOk = toTarget.Size() < visionDist;
+bool AIVision::IsInsideCone(AActor* targetActor) const
+{
+    const FVector dir = m_pawn->GetActorForwardVector().GetSafeNormal();
+    const FVector toTarget = targetActor->GetActorLocation() - m_pawn->GetActorLocation();
+    const float acos = FMath::RadiansToDegrees(std::acos(FVector::DotProduct(dir, toTarget.GetSafeNormal())));
+    const bool angleOk = acos < m_visionAngle;
+    const bool distOk = toTarget.Size() < m_coneVisionDist;
     return angleOk && distOk;
 }
 

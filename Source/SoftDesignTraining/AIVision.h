@@ -13,12 +13,15 @@ public:
     AIVision();
     ~AIVision();
 
-    enum Dir { left, right, straight };
+    enum Dir { left, right, straight, angleLeft, angleRight };
 
-    bool DetectWall(UWorld* world, APawn* const pawn, FVector& outObjectNormal, Dir direction = Dir::straight);
+    TTuple<bool, float> DetectWall(UWorld* world, APawn* const pawn, FVector& outObjectNormal, Dir direction = Dir::straight);
     bool DetectTrap(UWorld* world, APawn* const pawn, FVector& outObjectNormal);
     bool DetectCollectible(UWorld* world, APawn* const pawn, FVector& outObjectNormal);
-    bool DetectPlayer(UWorld* world, APawn* const pawn, FVector& outObjectNormal);
+    TTuple<bool, bool> DetectPlayer(UWorld* world, APawn* const pawn, FVector& outObjectNormal);
+
+    const float m_visionAngle = 25.0f;
+    float m_coneVisionDist = 350.0f;
 
 private:
 
@@ -27,12 +30,13 @@ private:
     ECollisionChannel m_channel;
     Dir m_direction;
 
-    void SetVisionParams(UWorld* world, APawn* const pawn, ECollisionChannel channel, Dir direction = Dir::straight);
+    void SetVisionParams(UWorld* world, APawn* const pawn, ECollisionChannel channel, float coneVisionDist = 350.0f, Dir direction = Dir::straight);
 
-    bool DetectObjectInDirection(FVector& ObjectNormal, bool returnPos = false);
-    bool DetectWallInDirection(FVector& outObjectNormal);
+    TTuple<bool, AActor*> DetectObjectInDirection(FVector& ObjectNormal, bool returnPos = false);
+    TTuple<bool, float> DetectWallInDirection(FVector& outObjectNormal);
     FVector GetObjectNormal(FVector target);
-    bool IsInsideCone(AActor* targetActor, float visionDist = 150.0f) const;
+    bool ObjectIsVisible(const FOverlapResult object, const TArray <FHitResult> hitData, bool objIsHidden) const;
+    bool IsInsideCone(AActor* targetActor) const;
     TArray<FOverlapResult> CollectVisibleObjects() const;
     TArray<FOverlapResult> CollectObjectsAround() const;
 };
