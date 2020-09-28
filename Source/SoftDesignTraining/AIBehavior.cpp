@@ -197,7 +197,7 @@ void AIBehavior::Dodge(APawn* const pawn, bool dodgeTowardsLeft)
 {
     FVector escape = pawn->GetActorRightVector().GetSafeNormal();
     escape = dodgeTowardsLeft ? -escape : escape;
-    pawn->AddMovementInput(escape, 0.15);UE_LOG(LogTemp, Warning, TEXT("Dodeging ") );
+    pawn->AddMovementInput(escape, 0.15);
 }
 
 /*
