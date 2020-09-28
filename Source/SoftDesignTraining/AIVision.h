@@ -32,10 +32,12 @@ private:
 
     void SetVisionParams(UWorld* world, APawn* const pawn, ECollisionChannel channel, float coneVisionDist = 350.0f, Dir direction = Dir::straight);
 
-    TTuple<bool, AActor*> DetectObjectInDirection(FVector& ObjectNormal, bool returnPos = false);
-    TTuple<bool, float> DetectWallInDirection(FVector& outObjectNormal);
-    FVector GetObjectNormal(FVector target);
-    bool ObjectIsVisible(const FOverlapResult object, const TArray <FHitResult> hitData, bool objIsHidden) const;
+    TTuple<bool, AActor*> DetectObjectInDirection(FVector& ObjectNormal, bool returnPos = false) const;
+    TTuple<bool, float> DetectWallInDirection(FVector& outObjectNormal) const;
+    FVector GetObjectNormal(FVector target) const;
+    TArray <FHitResult> RemoveHiddenObjectsFromHitResults(const TArray <FHitResult> hitData) const;
+    bool ObjectIsVisible(UPrimitiveComponent* targetComponent, AActor* targetActor) const;
+    bool ObjectIsVisibleToPawn(const FOverlapResult object, const TArray <FHitResult> hitData, bool objIsHidden) const;
     bool IsInsideCone(AActor* targetActor) const;
     TArray<FOverlapResult> CollectVisibleObjects() const;
     TArray<FOverlapResult> CollectObjectsAround() const;

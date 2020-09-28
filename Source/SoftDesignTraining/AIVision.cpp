@@ -97,7 +97,7 @@ void AIVision::SetVisionParams(UWorld* world, APawn* const pawn, ECollisionChann
  * @param outObjectNormal see "AIVision::DetectWall"
  * @return see "AIVision::DetectWall"
  */
-TTuple<bool, float> AIVision::DetectWallInDirection(FVector& outObjectNormal)
+TTuple<bool, float> AIVision::DetectWallInDirection(FVector& outObjectNormal) const
 {
     float visionDist = 250.0f;
     FHitResult hitResult;
@@ -130,7 +130,7 @@ TTuple<bool, float> AIVision::DetectWallInDirection(FVector& outObjectNormal)
  * @param returnPos true if "outObjectNormal" should contain the object position instead of the normal
  * @return see "AIVision::DetectWall"
  */
-TTuple<bool, AActor*> AIVision::DetectObjectInDirection(FVector& outObjectNormal, bool returnPos)
+TTuple<bool, AActor*> AIVision::DetectObjectInDirection(FVector& outObjectNormal, bool returnPos) const
 {
     const TArray<FOverlapResult> foundObjects = CollectVisibleObjects();
     const bool foundObject = foundObjects.Num() > 0;
@@ -148,7 +148,7 @@ TTuple<bool, AActor*> AIVision::DetectObjectInDirection(FVector& outObjectNormal
 /**
  * @return the provided target normal vector
  */
-FVector AIVision::GetObjectNormal(FVector target)
+FVector AIVision::GetObjectNormal(FVector target) const
 {
     FHitResult hitResult;
     m_world->LineTraceSingleByObjectType(hitResult, m_pawn->GetActorLocation(), target, m_channel);
@@ -173,25 +173,44 @@ TArray<FOverlapResult> AIVision::CollectVisibleObjects() const
         objectQueryParams.RemoveObjectTypesToQuery(m_channel); // remove the target
 
         m_world->LineTraceMultiByObjectType(hitData, start, end, objectQueryParams);
+        hitData = RemoveHiddenObjectsFromHitResults(hitData);
 
         UPrimitiveComponent* objComponent = object.GetComponent();
 
         // check if object is not hidden
-        bool objIsHidden = false;
-        if (objComponent->GetCollisionObjectType() == COLLISION_COLLECTIBLE)
-        {
-            AStaticMeshActor* collectible = dynamic_cast <AStaticMeshActor*>(object.GetActor());
-            objIsHidden = !collectible->GetStaticMeshComponent()->IsVisible();
-        }
-        return ObjectIsVisible(object, hitData, objIsHidden);
+        return ObjectIsVisibleToPawn(object, hitData, !ObjectIsVisible(objComponent, object.GetActor()));
     });
     return objects;
 }
 
 /**
+ * Removes all hidden objects from a hit result
+ */
+TArray <FHitResult> AIVision::RemoveHiddenObjectsFromHitResults(TArray <FHitResult> hitData) const
+{
+    return hitData.FilterByPredicate([&](const FHitResult obj) {
+        return ObjectIsVisible(obj.GetComponent(), obj.GetActor());
+    });
+}
+
+/**
+ * @return true if an object is visible to the world
+ */
+bool AIVision::ObjectIsVisible(UPrimitiveComponent* targetComponent, AActor* targetActor) const
+{
+    bool objIsVisible = true;
+    if (targetComponent->GetCollisionObjectType() == COLLISION_COLLECTIBLE)
+    {
+        AStaticMeshActor* collectible = dynamic_cast <AStaticMeshActor*>(targetActor);
+        objIsVisible = collectible->GetStaticMeshComponent()->IsVisible();
+    }
+    return objIsVisible;
+}
+
+/**
  * @return true if an object is visible to the pawn
  */
-bool AIVision::ObjectIsVisible(const FOverlapResult object, const TArray <FHitResult> hitData, bool objIsHidden) const
+bool AIVision::ObjectIsVisibleToPawn(const FOverlapResult object, const TArray <FHitResult> hitData, bool objIsHidden) const
 {
     const bool objIsInsideCone = IsInsideCone(object.GetActor());
     const bool objIsRelevant = object.GetComponent()->GetCollisionObjectType() == m_channel;
