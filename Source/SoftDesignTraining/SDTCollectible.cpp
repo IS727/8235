@@ -13,6 +13,7 @@ void ASDTCollectible::Collect()
     GetWorld()->GetTimerManager().SetTimer(m_CollectCooldownTimer, this, &ASDTCollectible::OnCooldownDone, m_CollectCooldownDuration, false);
 
     GetStaticMeshComponent()->SetVisibility(false);
+    GetStaticMeshComponent()->SetGenerateOverlapEvents(false);
 }
 
 void ASDTCollectible::OnCooldownDone()
@@ -20,6 +21,7 @@ void ASDTCollectible::OnCooldownDone()
     GetWorld()->GetTimerManager().ClearTimer(m_CollectCooldownTimer);
 
     GetStaticMeshComponent()->SetVisibility(true);
+    GetStaticMeshComponent()->SetGenerateOverlapEvents(true);
 }
 
 bool ASDTCollectible::IsOnCooldown()
