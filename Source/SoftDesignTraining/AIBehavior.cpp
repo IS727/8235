@@ -189,10 +189,9 @@ void AIBehavior::TurnBack(APawn* const pawn, bool avoidingWall, bool avoidingTra
 }
 
 /*
- * Makes the pawn perform a 180
+ * Makes the pawn dodge a side wall
  *
- * @param avoidingWall if true, sets the pawn in the wall avoidance state
- * @param avoidingTrap if true, sets the pawn in the trap avoidance state
+ * @param dodgeTowardsLeft if true, the pawn will dodge via the left
  */
 void AIBehavior::Dodge(APawn* const pawn, bool dodgeTowardsLeft)
 {
