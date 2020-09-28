@@ -20,6 +20,9 @@ private:
     const float m_minWallSeparation = 150.0f;
     bool m_nextRandomTurnRight = true;
 
+    bool m_running_away = false;
+    bool m_trapped_by_player = false;
+
     bool m_avoidingWall = false;
     bool m_avoidingTrap = false;
 

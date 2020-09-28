@@ -43,17 +43,31 @@ void AIBehavior::HandleObstacles(UWorld* world, APawn* const pawn, float deltaTi
             if (rightClear && leftClear) InitiateAvoidance(GetRandomTurnDirection());
             else if (rightClear) InitiateAvoidance(true);
             else if (leftClear) InitiateAvoidance(false);
-            else TurnBack(pawn, false, true);
+            else
+            {
+                TurnBack(pawn, false, true);
+                if (m_running_away) m_trapped_by_player = true;
+            }
         }
         else if (trapDetected) TurnBack(pawn, false, true);
         else if (playerDetected)
         {
             const bool playerIsPoweredUp = playerDetection.Get<1>();
-            if (playerIsPoweredUp) TurnBack(pawn, false, true);
+            if (playerIsPoweredUp)
+            {
+                m_running_away = true;
+                if (m_trapped_by_player) speed = 0;
+                else TurnBack(pawn, false, true);
+            }
             else MoveToTarget(pawn, speed, playerPos);
         }
         else if (collectibleDetected) MoveToTarget(pawn, speed, collectiblePos);
-        else KeepWallsAway(world, pawn, vision);
+        else
+        {
+            m_running_away = false;
+            m_trapped_by_player = false;
+            KeepWallsAway(world, pawn, vision);
+        }
     }
 }
 
