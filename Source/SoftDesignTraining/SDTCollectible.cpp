@@ -8,14 +8,11 @@ ASDTCollectible::ASDTCollectible()
 
 }
 
-
 void ASDTCollectible::Collect()
 {
     GetWorld()->GetTimerManager().SetTimer(m_CollectCooldownTimer, this, &ASDTCollectible::OnCooldownDone, m_CollectCooldownDuration, false);
 
     GetStaticMeshComponent()->SetVisibility(false);
-
-    //évite aux objets d'être collectés durant le cooldown
     GetStaticMeshComponent()->SetGenerateOverlapEvents(false);
 }
 
