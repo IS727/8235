@@ -34,7 +34,7 @@ private:
     float m_turnDegree = 0.0f;
     FVector m_targetHeading;
 
-    void MoveToTarget(UWorld* world, APawn* const pawn, float& speed, FVector collectiblePos, AIVision* vision);
+    void MoveToTarget(APawn* const pawn, FVector targetPos);
     void AvoidObstacle(APawn* const pawn, float deltaTime, float& speed);
     void KeepWallsAway(UWorld* world, APawn* const pawn, AIVision* vision);
     void ResetTurnState(FVector targetHeading, bool avoidingWall, bool avoidingTrap);

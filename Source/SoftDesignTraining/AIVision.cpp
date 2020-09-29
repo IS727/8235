@@ -7,8 +7,15 @@
 #include "SDTCollectible.h"
 #include <SoftDesignTraining\SoftDesignTrainingMainCharacter.h>
 
-AIVision::AIVision()
+AIVision::AIVision() {
+
+}
+
+AIVision::AIVision(float visionAngle, float wallVisionDist, float lineVisionDist)
 {
+	m_visionAngle = visionAngle;
+	m_wallVisionDist = wallVisionDist;
+	m_lineVisionDist = lineVisionDist;
 }
 
 AIVision::~AIVision()
@@ -27,7 +34,7 @@ AIVision::~AIVision()
  */
 TTuple<bool, float> AIVision::DetectWall(UWorld* world, APawn* const pawn, FVector& outObjectNormal, Dir direction)
 {
-    SetVisionParams(world, pawn, ECC_WorldStatic, 350.0f, direction);
+    SetVisionParams(world, pawn, ECC_WorldStatic, m_wallVisionDist, direction);
     return DetectWallInDirection(outObjectNormal);
 }
 
@@ -39,7 +46,7 @@ TTuple<bool, float> AIVision::DetectWall(UWorld* world, APawn* const pawn, FVect
  */
 bool AIVision::DetectTrap(UWorld* world, APawn* const pawn, FVector& outObjectNormal)
 {
-    SetVisionParams(world, pawn, COLLISION_DEATH_OBJECT);
+    SetVisionParams(world, pawn, COLLISION_DEATH_OBJECT, m_wallVisionDist);
     return DetectObjectInDirection(outObjectNormal).Get<0>();
 }
 
@@ -51,7 +58,7 @@ bool AIVision::DetectTrap(UWorld* world, APawn* const pawn, FVector& outObjectNo
  */
 bool AIVision::DetectCollectible(UWorld* world, APawn* const pawn, FVector& outCollectiblePos)
 {
-    SetVisionParams(world, pawn, COLLISION_COLLECTIBLE, 600.0f);
+    SetVisionParams(world, pawn, COLLISION_COLLECTIBLE, m_lineVisionDist);
     return DetectObjectInDirection(outCollectiblePos, true).Get<0>();
 }
 
@@ -65,7 +72,7 @@ bool AIVision::DetectCollectible(UWorld* world, APawn* const pawn, FVector& outC
  */
 TTuple<bool, bool> AIVision::DetectPlayer(UWorld* world, APawn* const pawn, FVector& outPlayerPos)
 {
-    SetVisionParams(world, pawn, COLLISION_PLAYER, 600.0f);
+    SetVisionParams(world, pawn, COLLISION_PLAYER, m_lineVisionDist);
     TTuple<bool, AActor*> res = DetectObjectInDirection(outPlayerPos, true);
     const bool playerFound = res.Get<0>();
     bool playerIsPoweredUp = false;
