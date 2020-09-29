@@ -43,31 +43,17 @@ void AIBehavior::HandleObstacles(UWorld* world, APawn* const pawn, float deltaTi
             if (rightClear && leftClear) InitiateAvoidance(GetRandomTurnDirection());
             else if (rightClear) InitiateAvoidance(true);
             else if (leftClear) InitiateAvoidance(false);
-            else
-            {
-                TurnBack(pawn, false, true);
-                if (m_running_away) m_trapped_by_player = true;
-            }
+            else HandleTrap(pawn);
         }
-        else if (trapDetected) TurnBack(pawn, false, true);
+        else if (trapDetected) HandleTrap(pawn);
         else if (playerDetected)
         {
             const bool playerIsPoweredUp = playerDetection.Get<1>();
-            if (playerIsPoweredUp)
-            {
-                m_running_away = true;
-                if (m_trapped_by_player) speed = 0;
-                else TurnBack(pawn, false, true);
-            }
+            if (playerIsPoweredUp) EscapePlayer(pawn, speed);
             else MoveToTarget(pawn, speed, playerPos);
         }
         else if (collectibleDetected) MoveToTarget(pawn, speed, collectiblePos);
-        else
-        {
-            m_running_away = false;
-            m_trapped_by_player = false;
-            KeepWallsAway(world, pawn, vision);
-        }
+        else  KeepWallsAway(world, pawn, vision);
     }
 }
 
@@ -78,6 +64,7 @@ void AIBehavior::HandleObstacles(UWorld* world, APawn* const pawn, float deltaTi
  */
 void AIBehavior::MoveToTarget(APawn* const pawn, float& speed, FVector targetPos)
 {
+    ResetTrapStatus();
     FVector const toTarget((targetPos - pawn->GetActorLocation()).GetSafeNormal());
     const float degree = GetPawnDegreesToVector(pawn, toTarget);
     pawn->AddActorWorldRotation(FRotator(0.0f, degree, 0.0f));
@@ -123,6 +110,8 @@ void AIBehavior::AvoidObstacle(APawn* const pawn, float deltaTime, float& speed)
  */
 void AIBehavior::KeepWallsAway(UWorld* world, APawn* const pawn, AIVision* vision)
 {
+    ResetTrapStatus();
+
     FVector rightWallNormal, leftWallNormal;
     const TTuple<bool, float> rightWallStats = vision->DetectWall(world, pawn, rightWallNormal, AIVision::right);
     const TTuple<bool, float> leftWallStats = vision->DetectWall(world, pawn, leftWallNormal, AIVision::left);
@@ -224,4 +213,29 @@ bool AIBehavior::GetRandomTurnDirection()
     const bool nextDirection = m_nextRandomTurnRight;
     m_nextRandomTurnRight = !m_nextRandomTurnRight;
     return nextDirection;
+}
+
+void AIBehavior::ResetTrapStatus()
+{
+    m_running_away = false;
+    m_trapped_by_player = false;
+}
+
+/*
+ * Makes the pawn get away from the player
+ */
+void AIBehavior::EscapePlayer(APawn* const pawn, float& speed)
+{
+    m_running_away = true;
+    if (m_trapped_by_player) speed = 0;
+    else TurnBack(pawn, false, true);
+}
+
+/*
+ * Makes the pawn move away from a blocking object in front of him
+ */
+void AIBehavior::HandleTrap(APawn* const pawn)
+{
+    if (m_running_away) m_trapped_by_player = true;
+    TurnBack(pawn, false, true);
 }

@@ -43,4 +43,7 @@ private:
     void TurnBack(APawn* const pawn, bool avoidingWall, bool avoidingTrap);
     void Dodge(APawn* const pawn, bool dodgeTowardsLeft);
     bool GetRandomTurnDirection();
+    void ResetTrapStatus();
+    void EscapePlayer(APawn* const pawn, float& speed);
+    void HandleTrap(APawn* const pawn);
 };
