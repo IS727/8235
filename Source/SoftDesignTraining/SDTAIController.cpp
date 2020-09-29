@@ -7,7 +7,6 @@
 
 void ASDTAIController::Tick(float deltaTime)
 {
-    
     APawn* const pawn = GetPawn();
     if (pawn)
     {

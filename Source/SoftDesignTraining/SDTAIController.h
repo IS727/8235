@@ -38,8 +38,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SimpleDisplay, Category = Vision)
 	float m_lineVisionDist = 600.0f;
 private:
-    //HUD
-    int32 HUDId = 0;
 
     // TURN and obstacle avoidance
     AIBehavior behavior;
