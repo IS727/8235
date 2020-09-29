@@ -11,6 +11,7 @@ class SOFTDESIGNTRAINING_API AIVision
 {
 public:
     AIVision();
+	AIVision(float visionAngle, float wallVisionDist, float lineVisionDist);
     ~AIVision();
 
     enum Dir { left, right, straight, angleLeft, angleRight };
@@ -20,8 +21,10 @@ public:
     bool DetectCollectible(UWorld* world, APawn* const pawn, FVector& outCollectiblePos);
     TTuple<bool, bool> DetectPlayer(UWorld* world, APawn* const pawn, FVector& outPlayerPos);
 
-    const float m_visionAngle = 25.0f;
-    float m_coneVisionDist = 350.0f;
+    float m_visionAngle;
+	float m_wallVisionDist;
+    float m_coneVisionDist; 
+	float m_lineVisionDist;
 
 private:
 
