@@ -6,7 +6,7 @@
 #include "SDTUtils.h"
 #include "DrawDebugHelpers.h"
 #include "SDTCollectible.h"
-
+#include "InGameHUD.h"
 
 ASoftDesignTrainingCharacter::ASoftDesignTrainingCharacter()
 {
@@ -19,6 +19,17 @@ void ASoftDesignTrainingCharacter::BeginPlay()
 
     GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &ASoftDesignTrainingCharacter::OnBeginOverlap);
     m_StartingPosition = GetActorLocation();
+
+    AInGameHUD* InGameHUD = Cast<AInGameHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+    if (InGameHUD)
+    {
+        if (HUDId == 0)
+        {
+            HUDId = InGameHUD->AddAI();
+           // UE_LOG(LogTemp, Warning, TEXT("AI log, %d"), HUDId);
+        }
+    }
+
 }
 
 void ASoftDesignTrainingCharacter::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -26,6 +37,13 @@ void ASoftDesignTrainingCharacter::OnBeginOverlap(UPrimitiveComponent* Overlappe
     if (OtherComponent->GetCollisionObjectType() == COLLISION_DEATH_OBJECT)
     {
         SetActorLocation(m_StartingPosition);
+
+        AInGameHUD* InGameHUD = Cast<AInGameHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+        if (InGameHUD)
+        {
+            InGameHUD->AddToDeathCounter(HUDId);
+            InGameHUD->ShowUpdatedCounters();
+        }
     }
     else if(ASDTCollectible* collectibleActor = Cast<ASDTCollectible>(OtherActor))
     {
@@ -35,10 +53,25 @@ void ASoftDesignTrainingCharacter::OnBeginOverlap(UPrimitiveComponent* Overlappe
         }
 
         collectibleActor->Collect();
+
+        AInGameHUD* InGameHUD = Cast<AInGameHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+        if (InGameHUD)
+        {
+            InGameHUD->AddToCollectibleCounter(HUDId);
+            InGameHUD->ShowUpdatedCounters();
+        }
+
     }
     else if (ASoftDesignTrainingMainCharacter* mainCharacter = Cast<ASoftDesignTrainingMainCharacter>(OtherActor))
     {
         if(mainCharacter->IsPoweredUp())
             SetActorLocation(m_StartingPosition);
+
+        AInGameHUD* InGameHUD = Cast<AInGameHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+        if (InGameHUD)
+        {
+            InGameHUD->AddToDeathCounter(HUDId);
+            InGameHUD->ShowUpdatedCounters();
+        }
     }
 }
