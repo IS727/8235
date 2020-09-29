@@ -17,7 +17,6 @@ class SOFTDESIGNTRAINING_API UDebugWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-private:
 
 public:
 
@@ -26,8 +25,6 @@ public:
 	virtual void NativeConstruct() override;
 
 	void UpdateThingCounter(FString HUD);
-
-	void Tick(float deltaTime);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 		class UTextBlock* TXTThing;
