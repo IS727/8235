@@ -107,18 +107,13 @@ TTuple<bool, float> AIVision::DetectWallInDirection(FVector& outObjectNormal) co
 
     if (m_direction == Dir::left) { rotation = -80.0f; visionDist = 300.0f; }
     else if (m_direction == Dir::right) { rotation = 80.0f; visionDist = 300.0f; }
-    else if (m_direction == Dir::angleRight) rotation = 20.0f;
-    else if (m_direction == Dir::angleLeft) rotation = -20.0f;
+    else if (m_direction == Dir::angleRight) rotation = m_visionAngle;
+    else if (m_direction == Dir::angleLeft) rotation = -m_visionAngle;
     dir = FRotator(0.0f, rotation, 0.0f).RotateVector(dir) * visionDist;
 
     FVector end(start + dir);
 
-    const bool foundWall = m_world->LineTraceSingleByObjectType(
-        hitResult,
-        start,
-        end,
-        m_channel
-    );
+    const bool foundWall = m_world->LineTraceSingleByObjectType(hitResult, start, end, m_channel);
     if (foundWall) outObjectNormal = FRotator(0.0f, -90.0f, 0.0f).RotateVector(hitResult.ImpactNormal.GetSafeNormal());
     return TTuple<bool, float>(foundWall, hitResult.Distance);
 }
