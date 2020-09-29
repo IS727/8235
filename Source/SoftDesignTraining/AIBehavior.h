@@ -34,14 +34,14 @@ private:
     float m_turnDegree = 0.0f;
     FVector m_targetHeading;
 
-    void MoveToTarget(APawn* const pawn, float& speed, FVector collectiblePos);
+    void MoveToTarget(UWorld* world, APawn* const pawn, float& speed, FVector collectiblePos, AIVision* vision);
     void AvoidObstacle(APawn* const pawn, float deltaTime, float& speed);
     void KeepWallsAway(UWorld* world, APawn* const pawn, AIVision* vision);
     void ResetTurnState(FVector targetHeading, bool avoidingWall, bool avoidingTrap);
     void InitiateAvoidance(bool turnRight, float turnTime = 0.5f, float turnAngle = 90.0f);
     float GetPawnDegreesToVector(APawn* const pawn, const FVector vector) const;
     void TurnBack(APawn* const pawn, bool avoidingWall, bool avoidingTrap);
-    void Dodge(APawn* const pawn, bool dodgeTowardsLeft);
+    void Dodge(UWorld* world, APawn* const pawn, AIVision* vision);
     bool GetRandomTurnDirection();
     void ResetTrapStatus();
     void EscapePlayer(APawn* const pawn, float& speed);
