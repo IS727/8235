@@ -25,6 +25,9 @@ private:
     float speed = 0;
     const float speedLimit = 0.6;
 
+    //HUD
+    int32 HUDId = 0;
+
     // TURN and obstacle avoidance
     AIBehavior behavior;
     AIVision vision;

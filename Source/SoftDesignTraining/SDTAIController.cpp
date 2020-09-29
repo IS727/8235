@@ -3,9 +3,25 @@
 #include "SDTAIController.h"
 #include "SoftDesignTraining.h"
 #include "DrawDebugHelpers.h"
+#include "InGameHUD.h"
 
 void ASDTAIController::Tick(float deltaTime)
 {
+    AInGameHUD* InGameHUD = Cast<AInGameHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+    if (InGameHUD)
+    {
+        if (HUDId == 0)
+        {
+            HUDId = InGameHUD->AddAI();
+            UE_LOG(LogTemp, Warning, TEXT("AI log, %d"), HUDId);
+        }
+        else
+        {
+            InGameHUD->UpdateThingCounter();
+        }
+
+    }
+
     APawn* const pawn = GetPawn();
     if (pawn)
     {
