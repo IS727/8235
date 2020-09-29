@@ -21,16 +21,12 @@ void AIBehavior::HandleObstacles(UWorld* world, APawn* const pawn, float deltaTi
     else
     {
         // detect stuff
-        FVector wallNormal, trapNormal, collectiblePos, playerPos, leftWallNormal, rightWallNormal;
+        FVector wallNormal, trapNormal, collectiblePos, playerPos;
         const bool blockingWallDetected = vision->DetectWall(world, pawn, wallNormal, AIVision::straight).Get<0>();
         const bool trapDetected = vision->DetectTrap(world, pawn, trapNormal);
         const bool collectibleDetected = vision->DetectCollectible(world, pawn, collectiblePos);
         const TTuple<bool, bool> playerDetection = vision->DetectPlayer(world, pawn, playerPos);
         const bool playerDetected = playerDetection.Get<0>();
-
-        const bool rightAngleBlocked = vision->DetectWall(world, pawn, rightWallNormal, AIVision::angleRight).Get<0>();
-        const bool leftAngleBlocked = vision->DetectWall(world, pawn, leftWallNormal, AIVision::angleLeft).Get<0>();
-        const bool nonBlockingWallDetected = rightAngleBlocked || leftAngleBlocked;
 
         // decide what to do
         if (blockingWallDetected)
@@ -50,9 +46,9 @@ void AIBehavior::HandleObstacles(UWorld* world, APawn* const pawn, float deltaTi
         {
             const bool playerIsPoweredUp = playerDetection.Get<1>();
             if (playerIsPoweredUp) EscapePlayer(pawn, speed);
-            else MoveToTarget(pawn, speed, playerPos);
+            else MoveToTarget(world, pawn, speed, playerPos, vision);
         }
-        else if (collectibleDetected) MoveToTarget(pawn, speed, collectiblePos);
+        else if (collectibleDetected) MoveToTarget(world, pawn, speed, collectiblePos, vision);
         else  KeepWallsAway(world, pawn, vision);
     }
 }
@@ -62,9 +58,10 @@ void AIBehavior::HandleObstacles(UWorld* world, APawn* const pawn, float deltaTi
 /**
  * Rotates the pawn towards the target position
  */
-void AIBehavior::MoveToTarget(APawn* const pawn, float& speed, FVector targetPos)
+void AIBehavior::MoveToTarget(UWorld* world, APawn* const pawn, float& speed, FVector targetPos, AIVision* vision)
 {
     ResetTrapStatus();
+    Dodge(world, pawn, vision);
     FVector const toTarget((targetPos - pawn->GetActorLocation()).GetSafeNormal());
     const float degree = GetPawnDegreesToVector(pawn, toTarget);
     pawn->AddActorWorldRotation(FRotator(0.0f, degree, 0.0f));
@@ -196,11 +193,19 @@ void AIBehavior::TurnBack(APawn* const pawn, bool avoidingWall, bool avoidingTra
  *
  * @param dodgeTowardsLeft if true, the pawn will dodge via the left
  */
-void AIBehavior::Dodge(APawn* const pawn, bool dodgeTowardsLeft)
+void AIBehavior::Dodge(UWorld* world, APawn* const pawn, AIVision* vision)
 {
-    FVector escape = pawn->GetActorRightVector().GetSafeNormal();
-    escape = dodgeTowardsLeft ? -escape : escape;
-    pawn->AddMovementInput(escape, 0.15);
+    FVector leftWallNormal, rightWallNormal;
+    const bool rightAngleBlocked = vision->DetectWall(world, pawn, rightWallNormal, AIVision::angleRight).Get<0>();
+    const bool leftAngleBlocked = vision->DetectWall(world, pawn, leftWallNormal, AIVision::angleLeft).Get<0>();
+    const bool nonBlockingWallDetected = rightAngleBlocked || leftAngleBlocked;
+
+    if (nonBlockingWallDetected)
+    {
+        FVector escape = pawn->GetActorRightVector().GetSafeNormal();
+        escape = rightAngleBlocked ? -escape : escape;
+        pawn->AddMovementInput(escape, 0.2);
+    }
 }
 
 /*
