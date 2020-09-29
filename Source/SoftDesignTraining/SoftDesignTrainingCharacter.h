@@ -20,5 +20,8 @@ protected:
     virtual void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
     FVector m_StartingPosition;
+
+    //HUD
+    int32 HUDId = 0;
 };
 
