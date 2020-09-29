@@ -46,9 +46,9 @@ void AIBehavior::HandleObstacles(UWorld* world, APawn* const pawn, float deltaTi
         {
             const bool playerIsPoweredUp = playerDetection.Get<1>();
             if (playerIsPoweredUp) EscapePlayer(pawn, speed);
-            else MoveToTarget(world, pawn, speed, playerPos, vision);
+            else MoveToTarget(pawn, playerPos);
         }
-        else if (collectibleDetected) MoveToTarget(world, pawn, speed, collectiblePos, vision);
+        else if (collectibleDetected) MoveToTarget(pawn, collectiblePos);
         else  KeepWallsAway(world, pawn, vision);
     }
 }
@@ -58,10 +58,9 @@ void AIBehavior::HandleObstacles(UWorld* world, APawn* const pawn, float deltaTi
 /**
  * Rotates the pawn towards the target position
  */
-void AIBehavior::MoveToTarget(UWorld* world, APawn* const pawn, float& speed, FVector targetPos, AIVision* vision)
+void AIBehavior::MoveToTarget(APawn* const pawn, FVector targetPos)
 {
     ResetTrapStatus();
-    Dodge(world, pawn, vision);
     FVector const toTarget((targetPos - pawn->GetActorLocation()).GetSafeNormal());
     const float degree = GetPawnDegreesToVector(pawn, toTarget);
     pawn->AddActorWorldRotation(FRotator(0.0f, degree, 0.0f));
